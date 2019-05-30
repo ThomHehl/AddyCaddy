@@ -20,6 +20,9 @@ public class ContactPoint {
     @GeneratedValue
     private Long                        id;
 
+    @Column(nullable = false, unique = true)
+    private String                      customerId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ContactPointType            contactPointType;
@@ -50,6 +53,14 @@ public class ContactPoint {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
     }
 
     public ContactPointType getContactPointType() {
@@ -122,19 +133,6 @@ public class ContactPoint {
         else {
             throw new AddyCaddyException("Cannot set phone number on a contact that already has email or address");
         }
-    }
-
-    @Override
-    public String toString() {
-        return "ContactPoint{" +
-                "id=" + id +
-                ", contactPointType=" + contactPointType +
-                ", endDate=" + DateHelper.toIso8601(endDate) +
-                ", startDate=" + DateHelper.toIso8601(startDate) +
-                ", address=" + address +
-                ", emailAddress=" + emailAddress +
-                ", phone=" + phone +
-                '}';
     }
 
     @Override
@@ -211,5 +209,70 @@ public class ContactPoint {
         }
 
         return result;
+    }
+
+    public boolean isAddress() {
+        boolean result;
+
+        switch (contactPointType) {
+            case BillingAddress:
+            case Location:
+            case ShippingAddress:
+                result = true;
+                break;
+            default:
+                result = false;
+                break;
+        }
+
+        return result;
+    }
+
+    public boolean isEmail() {
+        boolean result;
+
+        switch (contactPointType) {
+            case BillingEmail:
+            case BusinessEmail:
+                result = true;
+                break;
+            default:
+                result = false;
+                break;
+        }
+
+        return result;
+    }
+
+
+    public boolean isPhone() {
+        boolean result;
+
+        switch (contactPointType) {
+            case Fax:
+            case HomePhone:
+            case WorkPhone:
+                result = true;
+                break;
+            default:
+                result = false;
+                break;
+        }
+
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "ContactPoint{" +
+                "id=" + id +
+                ", customerId='" + customerId + '\'' +
+                ", contactPointType=" + contactPointType +
+                ", endDate=" + endDate +
+                ", startDate=" + startDate +
+                ", address=" + address +
+                ", emailAddress=" + emailAddress +
+                ", phone=" + phone +
+                '}';
     }
 }

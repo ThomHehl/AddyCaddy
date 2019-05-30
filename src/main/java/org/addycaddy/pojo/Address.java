@@ -30,7 +30,7 @@ public class Address {
     private String                      city;
 
     @Column(nullable = false)
-    private String                      country = COUNTRY_CODE_US;
+    private String                      countryCode = COUNTRY_CODE_US;
 
     @Column(nullable = false)
     private String                      state;
@@ -86,12 +86,12 @@ public class Address {
         this.city = city;
     }
 
-    public String getCountry() {
-        return country;
+    public String getCountryCode() {
+        return countryCode;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
+    public void setCountryCode(String country) {
+        this.countryCode = country;
     }
 
     public String getState() {
@@ -120,14 +120,14 @@ public class Address {
                 street1.equals(address.street1) &&
                 Objects.equals(street2, address.street2) &&
                 city.equals(address.city) &&
-                country.equals(address.country) &&
+                countryCode.equals(address.countryCode) &&
                 state.equals(address.state) &&
                 postalCode.equals(address.postalCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(attention, name, street1, street2, city, country, state, postalCode);
+        return Objects.hash(attention, name, street1, street2, city, countryCode, state, postalCode);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class Address {
                 ", street1='" + street1 + '\'' +
                 ", street2='" + street2 + '\'' +
                 ", city='" + city + '\'' +
-                ", country='" + country + '\'' +
+                ", country='" + countryCode + '\'' +
                 ", state='" + state + '\'' +
                 ", postalCode='" + postalCode + '\'' +
                 '}';

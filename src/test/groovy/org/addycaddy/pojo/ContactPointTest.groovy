@@ -21,7 +21,7 @@ class ContactPointTest extends Specification {
     static ContactPoint getHomePhone() {
         ContactPoint result = new ContactPoint()
 
-        result.contactPointType = ContactPointType.Home
+        result.contactPointType = ContactPointType.HomePhone
         result.startDate = new LocalDate(1970, 01, 01)
         result.phone = PhoneTest.phone
 
@@ -51,7 +51,7 @@ class ContactPointTest extends Specification {
     static ContactPoint getWorkEmail() {
         ContactPoint result = new ContactPoint()
 
-        result.contactPointType = ContactPointType.Home
+        result.contactPointType = ContactPointType.BillingEmail
         result.startDate = new LocalDate(1970, 01, 01)
         result.emailAddress = EmailAddressTest.emailAddress
 
@@ -60,6 +60,129 @@ class ContactPointTest extends Specification {
 
     void setup() {
         contactPoint = getBillingAddress()
+    }
+
+    def "isAddress BillingAddress"() {
+        when: "When testing for address"
+        boolean result = contactPoint.isAddress()
+
+        then: "Should be true"
+        result
+    }
+
+    def "isAddress HomePhone"() {
+        given: "A home phone number"
+        ContactPoint homePhone = getHomePhone()
+
+        when: "When testing for address"
+        boolean result = homePhone.isAddress()
+
+        then: "Should be false"
+        !result
+    }
+
+    def "isAddress Location"() {
+        given: "A location"
+        ContactPoint location = getLocation()
+
+        when: "When testing for address"
+        boolean result = location.isAddress()
+
+        then: "Should be true"
+        result
+    }
+
+    def "isAddress WorkEmail"() {
+        given: "A WorkEmail"
+        ContactPoint workEmail = getWorkEmail()
+
+        when: "When testing for address"
+        boolean result = workEmail.isAddress()
+
+        then: "Should be false"
+        !result
+    }
+
+    def "isEmail BillingAddress"() {
+        when: "When testing for email"
+        boolean result = contactPoint.isEmail()
+
+        then: "Should be false"
+        !result
+    }
+
+    def "isEmail HomePhone"() {
+        given: "A home phone number"
+        ContactPoint homePhone = getHomePhone()
+
+        when: "When testing for email"
+        boolean result = homePhone.isEmail()
+
+        then: "Should be false"
+        !result
+    }
+
+    def "isEmail Location"() {
+        given: "A location"
+        ContactPoint location = getLocation()
+
+        when: "When testing for email"
+        boolean result = location.isEmail()
+
+        then: "Should be false"
+        !result
+    }
+
+    def "isEmail WorkEmail"() {
+        given: "A WorkEmail"
+        ContactPoint workEmail = getWorkEmail()
+
+        when: "When testing for email"
+        boolean result = workEmail.isEmail()
+
+        then: "Should be true"
+        result
+    }
+
+    def "isPhone BillingAddress"() {
+        when: "When testing for phone"
+        boolean result = contactPoint.isPhone()
+
+        then: "Should be false"
+        !result
+    }
+
+    def "isPhone HomePhone"() {
+        given: "A home phone number"
+        ContactPoint homePhone = getHomePhone()
+
+        when: "When testing for phone"
+        boolean result = homePhone.isPhone()
+
+        then: "Should be true"
+        result
+    }
+
+    def "isPhone Location"() {
+        given: "A location"
+        ContactPoint location = getLocation()
+
+        when: "When testing for phone"
+        boolean result = location.isPhone()
+
+        then: "Should be false"
+        !result
+    }
+
+    def "isPhone WorkEmail"() {
+        given: "A WorkEmail"
+        ContactPoint workEmail = getWorkEmail()
+
+        when: "When testing for phone"
+        boolean result = workEmail.isPhone()
+
+        then: "Should be false"
+        !result
     }
 
     def "Equals same object"() {
