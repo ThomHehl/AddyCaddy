@@ -1,8 +1,10 @@
 package org.addycaddy.pojo;
 
 import com.heavyweightsoftware.util.DateHelper;
+import com.heavyweightsoftware.util.StringHelper;
 import org.addycaddy.exception.AddyCaddyException;
 import org.addycaddy.exception.DuplicateContactPointException;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -15,12 +17,12 @@ import java.util.Objects;
 public class ContactPoint {
 
     public static final LocalDate       DEFAULT_END_DATE = LocalDate.of(2999, 12, 31);
+    public static final int             EXTERNAL_ID_LENGTH = 64;
 
     @Id
     @GeneratedValue
     private Long                        id;
 
-    @GeneratedValue
     @Column(nullable = false, unique = true)
     private String                      externalId;
 
@@ -40,14 +42,17 @@ public class ContactPoint {
     private Calendar                    startDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     @JoinColumn(name = "fk_address")
     private Address                     address;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     @JoinColumn(name = "fk_email")
     private EmailAddress                emailAddress;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     @JoinColumn(name = "fk_phone")
     private Phone                       phone;
 
@@ -79,6 +84,10 @@ public class ContactPoint {
         return externalId;
     }
 
+    public void setExternalId() {
+        setExternalId(StringHelper.generateRandom(EXTERNAL_ID_LENGTH));
+    }
+
     public void setExternalId(String externalId) {
         this.externalId = externalId;
     }
@@ -102,6 +111,10 @@ public class ContactPoint {
 
     public LocalDate getStartDate() {
         return DateHelper.toLocalDate(this.startDate);
+    }
+
+    public void setStartDate() {
+        this.startDate = new GregorianCalendar();
     }
 
     public void setStartDate(LocalDate startDate) {

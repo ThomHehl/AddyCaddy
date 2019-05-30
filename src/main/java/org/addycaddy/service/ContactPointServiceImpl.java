@@ -28,19 +28,20 @@ public class ContactPointServiceImpl implements ContactPointService{
     public ContactPointDto create(ContactPointDto contactPointDto)
             throws AddyCaddyException {
 
-        ContactPoint contactPoint = fromDto(contactPointDto);
 
         String customerId = contactPointDto.getCustomerId();
         List<ContactPoint> oldContactPoints = contactPointRepository.findByCustomerId(customerId);
 
-        ContactPointType newType = contactPoint.getContactPointType();
+        ContactPointType newType = ContactPointType.valueOf(contactPointDto.getContactPointType());
         oldContactPoints.forEach(oldContactPoint -> {
             if (oldContactPoint.getContactPointType() == newType && oldContactPoint.isInPlay()) {
                 oldContactPoint.setEndDate(LocalDate.now());
-                contactPointRepository.saveAndFlush(oldContactPoint);
             }
         });
 
+        ContactPoint contactPoint = fromDto(contactPointDto);
+        contactPoint.setExternalId();
+        contactPoint.setStartDate();
         contactPoint = contactPointRepository.saveAndFlush(contactPoint);
 
         ContactPointDto result = toDto(contactPoint);
