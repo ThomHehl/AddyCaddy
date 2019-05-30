@@ -27,6 +27,26 @@ public class ContactPointServiceImpl implements ContactPointService{
     public ContactPointDto create(ContactPointDto contactPointDto)
             throws AddyCaddyException {
 
+        ContactPoint contactPoint = fromDto(contactPointDto);
+
+        String customerId = contactPointDto.getCustomerId();
+        List<ContactPoint> oldContactPoints = contactPointRepository.findByCustomerId(customerId);
+
+        ContactPointType newType = contactPoint.getContactPointType();
+        oldContactPoints.forEach(oldContactPoint -> {
+            if (oldContactPoint.getContactPointType() == newType && oldContactPoint.isInPlay()) {
+                oldContactPoint.setEndDate(LocalDate.now());
+                contactPointRepository.saveAndFlush(oldContactPoint);
+            }
+        });
+
+        contactPoint = contactPointRepository.saveAndFlush(contactPoint);
+
+        ContactPointDto result = toDto(contactPoint);
+        return result;
+    }
+
+    private ContactPoint fromDto(ContactPointDto contactPointDto) throws AddyCaddyException {
         ContactPoint contactPoint = mapper.map(contactPointDto, ContactPoint.class);
 
         if (contactPoint.isAddress()) {
@@ -42,20 +62,12 @@ public class ContactPointServiceImpl implements ContactPointService{
             contactPoint.setPhone(phone);
         }
 
-        String customerId = contactPointDto.getCustomerId();
-        List<ContactPoint> oldContactPoints = contactPointRepository.findByCustomerId(customerId);
+        return contactPoint;
+    }
 
-        ContactPointType newType = contactPoint.getContactPointType();
-        oldContactPoints.forEach(oldContactPoint -> {
-            if (oldContactPoint.getContactPointType() == newType && oldContactPoint.isInPlay()) {
-                oldContactPoint.setEndDate(LocalDate.now());
-                contactPointRepository.saveAndFlush(oldContactPoint);
-            }
-        });
-
-        contactPoint = contactPointRepository.saveAndFlush(contactPoint);
-
+    private ContactPointDto toDto(ContactPoint contactPoint) {
         ContactPointDto result = null;
+
         if (contactPoint.isAddress()) {
             result = mapper.map(contactPoint.getAddress(), ContactPointDto.class);
         }
@@ -68,7 +80,44 @@ public class ContactPointServiceImpl implements ContactPointService{
 
         result.setCustomerId(contactPoint.getCustomerId());
         result.setContactPointType(contactPoint.getContactPointType().toString());
+        result.setAddressId(contactPoint.getExternalId());
 
+        return result;
+    }
+
+    @Override
+    public ContactPointDto update(ContactPointDto contactPointDto) throws AddyCaddyException {
+        String externalId = contactPointDto.getAddressId();
+
+        ContactPoint contactPoint = contactPointRepository.findByExternalId(externalId);
+        if (contactPoint == null) {
+            throw new AddyCaddyException("Contact Point not found for external ID:" + externalId);
+        }
+
+        if (contactPoint.isAddress()) {
+            Address address = contactPoint.getAddress();
+            address.setAttention(contactPointDto.getAttention());
+            address.setName(contactPointDto.getName());
+            address.setStreet1(contactPointDto.getStreet1());
+            address.setStreet2(contactPointDto.getStreet2());
+            address.setCity(contactPointDto.getCity());
+            address.setState(contactPointDto.getState());
+            address.setPostalCode(contactPointDto.getPostalCode());
+            address.setCountryCode(contactPointDto.getCountryCode());
+        }
+        else if (contactPoint.isEmail()) {
+            EmailAddress email = contactPoint.getEmailAddress();
+            email.setEmail(contactPointDto.getEmail());
+        }
+        else if (contactPoint.isPhone()) {
+            Phone phone = contactPoint.getPhone();
+            phone.setPhone(contactPointDto.getPhoneNumber());
+            phone.setCountryCode(contactPointDto.getCountryCode());
+        }
+
+        contactPoint = contactPointRepository.saveAndFlush(contactPoint);
+
+        ContactPointDto result = toDto(contactPoint);
         return result;
     }
 }

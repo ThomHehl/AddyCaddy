@@ -7,4 +7,7 @@ public interface ContactPointService {
 
     ContactPointDto create(ContactPointDto contactPointDto)
             throws AddyCaddyException;
+
+    ContactPointDto update(ContactPointDto contactPointDto)
+            throws AddyCaddyException;
 }

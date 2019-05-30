@@ -1,6 +1,7 @@
 package org.addycaddy.service
 
 import org.addycaddy.client.dto.ContactPointDto
+import org.addycaddy.exception.AddyCaddyException
 import org.addycaddy.pojo.ContactPoint
 import org.addycaddy.pojo.ContactPointTest
 import org.addycaddy.pojo.ContactPointType
@@ -37,7 +38,7 @@ class ContactPointServiceImplTest extends Specification {
         when: "Creating the contact point"
         ContactPointDto result = service.create(dto)
 
-        then: "Should be return everything"
+        then: "Should return everything"
         1 * contactPointRepository.findByCustomerId(customerId) >> []
         1 * contactPointRepository.saveAndFlush(_) >> { ContactPoint cp ->
             cp.id = 42L
@@ -116,7 +117,7 @@ class ContactPointServiceImplTest extends Specification {
         dto.countryCode = "US"
         dto.phoneNumber = "614-555-1212"
 
-        and: "An existing business email"
+        and: "An existing billing address"
         ContactPoint billingAddress = ContactPointTest.billingAddress
         Long oldId = 1776
         billingAddress.setId(oldId)
@@ -155,5 +156,90 @@ class ContactPointServiceImplTest extends Specification {
         result.state == dto.state
         result.postalCode == dto.postalCode
         result.countryCode == dto.countryCode
+    }
+
+    def "Update billing address"() {
+        given: "A billing address"
+        ContactPointDto dto = new ContactPointDto()
+        dto.contactPointType = ContactPointDto.TYPE_BILLING_ADDR
+        String customerId = "Go, Bucks!"
+        dto.customerId = customerId
+        String externalId = "Who dey?"
+        dto.addressId = externalId
+        dto.attention = "Billing Department"
+        dto.name = "Ford Prefect"
+        dto.street1 = "120 S Main St"
+        dto.street2 = "Suite 5"
+        dto.city = "Columbus"
+        dto.state = "OH"
+        dto.postalCode = "43215"
+        dto.countryCode = "US"
+        dto.phoneNumber = "614-555-1212"
+
+        and: "An existing billing address"
+        ContactPoint billingAddress = ContactPointTest.billingAddress
+        Long oldId = 1776
+        billingAddress.id = oldId
+        billingAddress.customerId = customerId
+        billingAddress.externalId = externalId
+
+        when: "Creating the contact point"
+        ContactPointDto result = service.update(dto)
+
+        then: "Should return everything"
+        1 * contactPointRepository.findByExternalId(externalId) >> billingAddress
+        1 * contactPointRepository.saveAndFlush(billingAddress) >> { ContactPoint cp ->
+            cp.id = 42L
+            cp.contactPointType == ContactPointType.BillingAddress
+            cp.address != null
+            return cp
+        }
+
+        result.addressId == dto.addressId
+        result.contactPointType == dto.contactPointType
+        result.customerId == dto.customerId
+        result.attention == dto.attention
+        result.street1 == dto.street1
+        result.street2 == dto.street2
+        result.city == dto.city
+        result.state == dto.state
+        result.postalCode == dto.postalCode
+        result.countryCode == dto.countryCode
+    }
+
+    def "Update billing address not found"() {
+        given: "A billing address"
+        ContactPointDto dto = new ContactPointDto()
+        dto.contactPointType = ContactPointDto.TYPE_BILLING_ADDR
+        String customerId = "Go, Bucks!"
+        dto.customerId = customerId
+        String externalId = "Who dey?"
+        dto.addressId = externalId
+        dto.attention = "Billing Department"
+        dto.name = "Ford Prefect"
+        dto.street1 = "120 S Main St"
+        dto.street2 = "Suite 5"
+        dto.city = "Columbus"
+        dto.state = "OH"
+        dto.postalCode = "43215"
+        dto.countryCode = "US"
+        dto.phoneNumber = "614-555-1212"
+
+        and: "An existing billing address"
+        ContactPoint billingAddress = ContactPointTest.billingAddress
+        Long oldId = 1776
+        billingAddress.id = oldId
+        billingAddress.customerId = customerId
+        billingAddress.externalId = externalId
+
+        when: "Creating the contact point"
+        service.update(dto)
+
+        then: "Should return everything"
+        1 * contactPointRepository.findByExternalId(externalId) >> null
+        0 * contactPointRepository.saveAndFlush(billingAddress)
+
+        AddyCaddyException ace = thrown()
+        ace != null
     }
 }

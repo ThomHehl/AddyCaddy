@@ -20,6 +20,10 @@ public class ContactPoint {
     @GeneratedValue
     private Long                        id;
 
+    @Id
+    @GeneratedValue
+    private String                      externalId;
+
     @Column(nullable = false, unique = true)
     private String                      customerId;
 
@@ -69,6 +73,14 @@ public class ContactPoint {
 
     public void setContactPointType(ContactPointType contactPointType) {
         this.contactPointType = contactPointType;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 
     public LocalDate getEndDate() {

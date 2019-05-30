@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ContactPointRepository extends JpaRepository<ContactPoint, Long> {
     List<ContactPoint> findByCustomerId(String customerId);
+
+    ContactPoint findByExternalId(String externalId);
 }

@@ -1,9 +1,11 @@
 package org.addycaddy.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.heavyweightsoftware.util.StringHelper;
 import org.addycaddy.client.dto.ContactPointDto;
 import org.addycaddy.pojo.ContactPoint;
 import org.addycaddy.service.ContactPointService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +25,6 @@ public class ContactPointController implements ErrorController {
     public static final String          FAILURE = "failure";
     public static final String          SUCCESS = "success";
 
-    private final ObjectMapper          objectMapper = new ObjectMapper();
-
     @Autowired
     private ContactPointService         contactPointService;
 
@@ -39,6 +39,27 @@ public class ContactPointController implements ErrorController {
         } catch (Throwable tw) {
             log.error("Error creating contact point:" + contactPointDto, tw);
             result = FAILURE;
+        }
+
+        return result;
+    }
+
+    @RequestMapping(value = "/update", method = { RequestMethod.POST })
+    @ResponseBody
+    public String update(ContactPointDto contactPointDto) throws IOException {
+        String result;
+
+        if (StringUtils.isEmpty(contactPointDto.getId())) {
+            result = FAILURE;
+        }
+        else {
+            try {
+                contactPointService.update(contactPointDto);
+                result = SUCCESS;
+            } catch (Throwable tw) {
+                log.error("Error updating contact point:" + contactPointDto, tw);
+                result = FAILURE;
+            }
         }
 
         return result;
