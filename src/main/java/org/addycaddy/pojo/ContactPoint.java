@@ -20,8 +20,8 @@ public class ContactPoint {
     @GeneratedValue
     private Long                        id;
 
-    @Id
     @GeneratedValue
+    @Column(nullable = false, unique = true)
     private String                      externalId;
 
     @Column(nullable = false, unique = true)

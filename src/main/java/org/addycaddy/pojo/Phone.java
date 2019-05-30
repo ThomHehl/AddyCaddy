@@ -12,7 +12,7 @@ public class Phone {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private String                      countryCode;
+    private CountryCode                 countryCode;
 
     @Column(nullable = false)
     private String                      phone;
@@ -25,11 +25,11 @@ public class Phone {
         this.id = id;
     }
 
-    public String getCountryCode() {
+    public CountryCode getCountryCode() {
         return countryCode;
     }
 
-    public void setCountryCode(String countryCode) {
+    public void setCountryCode(CountryCode countryCode) {
         this.countryCode = countryCode;
     }
 

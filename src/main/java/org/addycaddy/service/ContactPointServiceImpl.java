@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -86,6 +87,19 @@ public class ContactPointServiceImpl implements ContactPointService{
     }
 
     @Override
+    public List<ContactPointDto> findByCustomerId(String customerId) {
+        List<ContactPoint> contactPoints = contactPointRepository.findByCustomerId(customerId);
+
+        List<ContactPointDto> result = new ArrayList<>(contactPoints.size());
+        contactPoints.forEach(contactPoint -> {
+            ContactPointDto dto = toDto(contactPoint);
+            result.add(dto);
+        });
+
+        return result;
+    }
+
+    @Override
     public ContactPointDto update(ContactPointDto contactPointDto) throws AddyCaddyException {
         String externalId = contactPointDto.getAddressId();
 
@@ -103,7 +117,7 @@ public class ContactPointServiceImpl implements ContactPointService{
             address.setCity(contactPointDto.getCity());
             address.setState(contactPointDto.getState());
             address.setPostalCode(contactPointDto.getPostalCode());
-            address.setCountryCode(contactPointDto.getCountryCode());
+            address.setCountryCode(CountryCode.valueOf(contactPointDto.getCountryCode()));
         }
         else if (contactPoint.isEmail()) {
             EmailAddress email = contactPoint.getEmailAddress();
@@ -112,7 +126,7 @@ public class ContactPointServiceImpl implements ContactPointService{
         else if (contactPoint.isPhone()) {
             Phone phone = contactPoint.getPhone();
             phone.setPhone(contactPointDto.getPhoneNumber());
-            phone.setCountryCode(contactPointDto.getCountryCode());
+            phone.setCountryCode(CountryCode.valueOf(contactPointDto.getCountryCode()));
         }
 
         contactPoint = contactPointRepository.saveAndFlush(contactPoint);

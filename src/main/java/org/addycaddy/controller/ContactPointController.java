@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ public class ContactPointController implements ErrorController {
 
     @RequestMapping(value = "/create", method = { RequestMethod.POST })
     @ResponseBody
-    public String create(ContactPointDto contactPointDto) throws IOException {
+    public String create(ContactPointDto contactPointDto) {
         String result;
 
         try {
@@ -44,12 +45,32 @@ public class ContactPointController implements ErrorController {
         return result;
     }
 
+    @RequestMapping(value = "/findByCustomerId", method = { RequestMethod.GET })
+    @ResponseBody
+    public List<ContactPointDto> findByCustomerId(String customerId) {
+        List<ContactPointDto> result;
+
+        if (StringUtils.isEmpty(customerId)) {
+            result = new ArrayList<>();
+        }
+        else {
+            try {
+                result = contactPointService.findByCustomerId(customerId);
+            } catch (Throwable tw) {
+                log.error("Error finding contact points for:" + customerId, tw);
+                result = new ArrayList<>();
+            }
+        }
+
+        return result;
+    }
+
     @RequestMapping(value = "/update", method = { RequestMethod.POST })
     @ResponseBody
-    public String update(ContactPointDto contactPointDto) throws IOException {
+    public String update(ContactPointDto contactPointDto) {
         String result;
 
-        if (StringUtils.isEmpty(contactPointDto.getId())) {
+        if (StringUtils.isEmpty(contactPointDto.getAddressId())) {
             result = FAILURE;
         }
         else {

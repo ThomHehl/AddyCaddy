@@ -1,9 +1,6 @@
 package org.addycaddy.pojo;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
@@ -30,7 +27,8 @@ public class Address {
     private String                      city;
 
     @Column(nullable = false)
-    private String                      countryCode = COUNTRY_CODE_US;
+    @Enumerated(EnumType.STRING)
+    private CountryCode                 countryCode = CountryCode.US;
 
     @Column(nullable = false)
     private String                      state;
@@ -86,11 +84,11 @@ public class Address {
         this.city = city;
     }
 
-    public String getCountryCode() {
+    public CountryCode getCountryCode() {
         return countryCode;
     }
 
-    public void setCountryCode(String country) {
+    public void setCountryCode(CountryCode country) {
         this.countryCode = country;
     }
 

@@ -158,6 +158,44 @@ class ContactPointServiceImplTest extends Specification {
         result.countryCode == dto.countryCode
     }
 
+    def "Find by customer ID"() {
+        given: "A customer ID and some contact points"
+        String customerId = "Don't Panic!"
+
+        List<ContactPoint> contactPointList = new ArrayList<>()
+
+        ContactPoint billingAddress = ContactPointTest.billingAddress
+        String billingAddrId = "Who dey?"
+        billingAddress.setExternalId(billingAddrId)
+        contactPointList.add(billingAddress)
+
+        ContactPoint workEmail = ContactPointTest.workEmail
+        String workEmailId = "Go, bucks!"
+        workEmail.externalId = workEmailId
+        contactPointList.add(workEmail)
+
+        when: "Finding by customer ID"
+        List<ContactPointDto> result = service.findByCustomerId(customerId)
+
+        then: "Should return them all"
+        1 * contactPointRepository.findByCustomerId(customerId) >> contactPointList
+        contactPointList.size() == result.size()
+
+        List<String> foundIds = new ArrayList<>()
+        foundIds.add(billingAddrId)
+        foundIds.add(workEmailId)
+
+        for (ContactPointDto dto : result) {
+            if(foundIds.contains(dto.addressId)) {
+                foundIds.remove(dto.addressId)
+            }
+            else {
+                dto.addressId == null
+            }
+        }
+        foundIds.isEmpty()
+    }
+
     def "Update billing address"() {
         given: "A billing address"
         ContactPointDto dto = new ContactPointDto()

@@ -1,5 +1,5 @@
 package org.addycaddy.pojo;
 
 public enum CountryCode {
-    UnitedStates
+    US
 }
