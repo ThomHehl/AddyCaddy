@@ -36,6 +36,7 @@ public class ContactPointServiceImpl implements ContactPointService{
         oldContactPoints.forEach(oldContactPoint -> {
             if (oldContactPoint.getContactPointType() == newType && oldContactPoint.isInPlay()) {
                 oldContactPoint.setEndDate(LocalDate.now());
+                contactPointRepository.saveAndFlush(oldContactPoint);
             }
         });
 
@@ -93,8 +94,10 @@ public class ContactPointServiceImpl implements ContactPointService{
 
         List<ContactPointDto> result = new ArrayList<>(contactPoints.size());
         contactPoints.forEach(contactPoint -> {
-            ContactPointDto dto = toDto(contactPoint);
-            result.add(dto);
+            if(contactPoint.isInPlay()) {
+                ContactPointDto dto = toDto(contactPoint);
+                result.add(dto);
+            }
         });
 
         return result;
@@ -126,7 +129,7 @@ public class ContactPointServiceImpl implements ContactPointService{
         }
         else if (contactPoint.isPhone()) {
             Phone phone = contactPoint.getPhone();
-            phone.setPhone(contactPointDto.getPhoneNumber());
+            phone.setPhoneNumber(contactPointDto.getPhoneNumber());
             phone.setCountryCode(CountryCode.valueOf(contactPointDto.getCountryCode()));
         }
 

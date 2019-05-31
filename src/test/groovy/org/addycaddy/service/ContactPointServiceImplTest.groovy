@@ -196,6 +196,51 @@ class ContactPointServiceImplTest extends Specification {
         foundIds.isEmpty()
     }
 
+
+    def "Find by customer ID with expired"() {
+        given: "A customer ID and some contact points"
+        String customerId = "Don't Panic!"
+
+        List<ContactPoint> contactPointList = new ArrayList<>()
+
+        ContactPoint billingAddress = ContactPointTest.billingAddress
+        String billingAddrId = "Who dey?"
+        billingAddress.setExternalId(billingAddrId)
+        contactPointList.add(billingAddress)
+
+        ContactPoint workEmail = ContactPointTest.workEmail
+        String workEmailId = "Go, Bucks!"
+        workEmail.externalId = workEmailId
+        contactPointList.add(workEmail)
+
+        ContactPoint expEmail = ContactPointTest.workEmail
+        String expEmailId = "Go, Cats!"
+        expEmail.externalId = expEmailId
+        expEmail.setEndDate()
+        contactPointList.add(expEmail)
+
+        when: "Finding by customer ID"
+        List<ContactPointDto> result = service.findByCustomerId(customerId)
+
+        then: "Should return them all"
+        1 * contactPointRepository.findByCustomerId(customerId) >> contactPointList
+        result.size() == 2
+
+        List<String> foundIds = new ArrayList<>()
+        foundIds.add(billingAddrId)
+        foundIds.add(workEmailId)
+
+        for (ContactPointDto dto : result) {
+            if(foundIds.contains(dto.addressId)) {
+                foundIds.remove(dto.addressId)
+            }
+            else {
+                dto.addressId == null
+            }
+        }
+        foundIds.isEmpty()
+    }
+
     def "Update billing address"() {
         given: "A billing address"
         ContactPointDto dto = new ContactPointDto()

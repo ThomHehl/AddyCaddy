@@ -15,7 +15,7 @@ public class Phone {
     private CountryCode                 countryCode;
 
     @Column(nullable = false)
-    private String                      phone;
+    private String                      phoneNumber;
 
     public Long getId() {
         return id;
@@ -33,12 +33,12 @@ public class Phone {
         this.countryCode = countryCode;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhoneNumber(String phone) {
+        this.phoneNumber = phone;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class Phone {
         return "Phone{" +
                 "id=" + id +
                 ", countryCode='" + countryCode + '\'' +
-                ", phone='" + phone + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
                 '}';
     }
 
@@ -56,11 +56,11 @@ public class Phone {
         if (o == null || getClass() != o.getClass()) return false;
         Phone phone1 = (Phone) o;
         return countryCode.equals(phone1.countryCode) &&
-                phone.equals(phone1.phone);
+                phoneNumber.equals(phone1.phoneNumber);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(countryCode, phone);
+        return Objects.hash(countryCode, phoneNumber);
     }
 }

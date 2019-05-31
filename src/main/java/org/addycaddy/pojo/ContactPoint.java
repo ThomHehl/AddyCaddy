@@ -14,10 +14,12 @@ import java.util.GregorianCalendar;
 import java.util.Objects;
 
 @Entity
+@Table(indexes = { @Index(name = "CON_PT_CUST_ID_IDX", columnList=ContactPoint.COL_CUSTOMER_ID, unique = false) })
 public class ContactPoint {
 
     public static final LocalDate       DEFAULT_END_DATE = LocalDate.of(2999, 12, 31);
     public static final int             EXTERNAL_ID_LENGTH = 64;
+    public static final String          COL_CUSTOMER_ID = "customer_id";
 
     @Id
     @GeneratedValue
@@ -26,7 +28,7 @@ public class ContactPoint {
     @Column(nullable = false, unique = true)
     private String                      externalId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, name = COL_CUSTOMER_ID)
     private String                      customerId;
 
     @Enumerated(EnumType.STRING)
@@ -103,6 +105,10 @@ public class ContactPoint {
         }
 
         return result;
+    }
+
+    public void setEndDate() {
+        setEndDate(LocalDate.now());
     }
 
     public void setEndDate(LocalDate endDate) {
@@ -274,6 +280,7 @@ public class ContactPoint {
         boolean result;
 
         switch (contactPointType) {
+            case BillingPhone:
             case Fax:
             case HomePhone:
             case WorkPhone:
