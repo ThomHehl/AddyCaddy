@@ -1,0 +1,3 @@
+curl -v "https://us-street.api.smartystreets.com/street-address?auth-id=c1b50815-b841-8a9c-b4fe-dce09ae4a0aa&auth-token=hTL9E73JP8aNIMdu3Enz&candidates=10&street=347+woodspring+dr&city=Lexington&state=KY&zipcode=40515&candidates=10"
+[]
+

@@ -1,0 +1,44 @@
+[
+  { "input_index":0,
+    "candidate_index":0,
+    "delivery_line_1":"3447 Woodspring Dr",
+    "last_line":"Lexington KY 40515-5856",
+    "delivery_point_barcode":"405155856470",
+    "components":
+    {
+      "primary_number":"3447",
+      "street_name":"Woodspring",
+      "street_suffix":"Dr",
+      "city_name":"Lexington",
+      "default_city_name":"Lexington",
+      "state_abbreviation":"KY",
+      "zipcode":"40515",
+      "plus4_code":"5856",
+      "delivery_point":"47",
+      "delivery_point_check_digit":"0"
+    },
+    "metadata":
+    {"record_type":"S",
+      "zip_type":"Standard",
+      "county_fips":"21067",
+      "county_name":"Fayette",
+      "carrier_route":"C045",
+      "congressional_district":"06",
+      "rdi":"Residential",
+      "elot_sequence":"0020",
+      "elot_sort":"D",
+      "latitude":37.96882,
+      "longitude":-84.4615,
+      "precision":"Zip9",
+      "time_zone":"Eastern",
+      "utc_offset":-5,
+      "dst":true
+    },
+    "analysis":
+    {"dpv_match_code":"Y",
+      "dpv_footnotes":"AABB",
+      "dpv_cmra":"N",
+      "dpv_vacant":"N",
+      "active":"Y"}
+  }
+]
