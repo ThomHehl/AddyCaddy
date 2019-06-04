@@ -1,9 +1,7 @@
 package org.addycaddy.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.heavyweightsoftware.util.StringHelper;
+import org.addycaddy.client.dto.AddyCaddyConstants;
 import org.addycaddy.client.dto.ContactPointDto;
-import org.addycaddy.pojo.ContactPoint;
 import org.addycaddy.service.ContactPointService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -27,9 +25,9 @@ public class ContactPointController implements ErrorController {
     @Autowired
     private ContactPointService         contactPointService;
 
-    @RequestMapping(value = "/create", method = { RequestMethod.POST })
+    @RequestMapping(value = AddyCaddyConstants.PATH_CREATE, method = { RequestMethod.POST })
     @ResponseBody
-    public String create(ContactPointDto contactPointDto) {
+    public String create(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) ContactPointDto contactPointDto) {
         String result;
 
         try {
@@ -43,9 +41,9 @@ public class ContactPointController implements ErrorController {
         return result;
     }
 
-    @RequestMapping(value = "/findByCustomerId", method = { RequestMethod.GET })
+    @RequestMapping(value = AddyCaddyConstants.PATH_FIND_BY_CUST_ID, method = { RequestMethod.GET })
     @ResponseBody
-    public List<ContactPointDto> findByCustomerId(String customerId) {
+    public List<ContactPointDto> findByCustomerId(@RequestParam(AddyCaddyConstants.KEY_CUSTOMER_ID) String customerId) {
         List<ContactPointDto> result;
 
         if (StringUtils.isEmpty(customerId)) {
@@ -63,9 +61,9 @@ public class ContactPointController implements ErrorController {
         return result;
     }
 
-    @RequestMapping(value = "/update", method = { RequestMethod.POST })
+    @RequestMapping(value = AddyCaddyConstants.PATH_UPDATE, method = { RequestMethod.POST })
     @ResponseBody
-    public String update(ContactPointDto contactPointDto) {
+    public String update(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) ContactPointDto contactPointDto) {
         String result;
 
         if (StringUtils.isEmpty(contactPointDto.getAddressId())) {
