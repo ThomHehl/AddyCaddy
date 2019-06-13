@@ -98,7 +98,7 @@ public class ContactPoint {
     }
 
     public void setExternalId() {
-        setExternalId(StringHelper.generateRandom(EXTERNAL_ID_LENGTH));
+        setExternalId(StringHelper.generateRandom(EXTERNAL_ID_LENGTH, StringHelper.URL_SAFE_CHARACTERS));
     }
 
     public void setExternalId(String externalId) {

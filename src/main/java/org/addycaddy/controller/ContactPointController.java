@@ -72,8 +72,8 @@ public class ContactPointController implements ErrorController {
 
     @RequestMapping(value = AddyCaddyConstants.PATH_SEARCH, method = { RequestMethod.GET })
     @ResponseBody
-    public List<ContactPointDto> search(@RequestParam(AddyCaddyConstants.SEARCH_BY) String searchBy,
-                                        @RequestParam(AddyCaddyConstants.SEARCH_KEY) String searchKey) {
+    public List<ContactPointDto> search(@RequestParam(AddyCaddyConstants.KEY_SEARCH_BY) String searchBy,
+                                        @RequestParam(AddyCaddyConstants.KEY_SEARCH_KEY) String searchKey) {
         List<ContactPointDto> result;
 
         switch (searchBy) {

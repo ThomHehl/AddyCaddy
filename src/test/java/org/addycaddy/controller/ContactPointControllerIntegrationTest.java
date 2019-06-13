@@ -32,39 +32,59 @@ public class ContactPointControllerIntegrationTest {
     private String                      dto3Json;
     private ObjectMapper                objectMapper = new ObjectMapper();
 
+    public static ContactPointDto getBillingEmail() {
+        ContactPointDto result = new ContactPointDto();
+
+        result.setContactPointType(ContactPointDto.TYPE_BILLING_EMAIL);
+        result.setEmail("zbeeblebrox@galaxy.gov");
+
+        return result;
+    }
+
+
+    public static ContactPointDto getBillingPhone() {
+        ContactPointDto result = new ContactPointDto();
+
+        result.setContactPointType(ContactPointDto.TYPE_BILLING_PHONE);
+        result.setPhoneNumber("6145551212");
+        result.setCountryCode(COUNTRY_CODE_US);
+
+        return result;
+    }
+
+    public static ContactPointDto getLocation() {
+        ContactPointDto result = new ContactPointDto();
+
+        result.setCountryCode(COUNTRY_CODE_US);
+        result.setContactPointType(ContactPointDto.TYPE_LOCATION);
+        result.setAttention("Billing Dept.");
+        result.setName("Zaphod Beeblebrox");
+        result.setStreet1("100 N. High St.");
+        result.setStreet2("Suite 405");
+        result.setCity("Columbus");
+        result.setState("OH");
+        result.setPostalCode("42315");
+
+        return result;
+    }
+
     @Before
     public void setUp() throws JsonProcessingException {
         customerId = "zbeeblebrox";
 
         //US Postal address
-        dto1 = new ContactPointDto();
+        dto1 = getLocation();
         dto1.setCustomerId(customerId);
-        dto1.setCountryCode(COUNTRY_CODE_US);
-        dto1.setContactPointType(ContactPointDto.TYPE_LOCATION);
-        dto1.setAttention("Billing Dept.");
-        dto1.setName("Zaphod Beeblebrox");
-        dto1.setStreet1("100 N. High St.");
-        dto1.setStreet2("Suite 405");
-        dto1.setCity("Columbus");
-        dto1.setState("OH");
-        dto1.setPostalCode("42315");
         dto1Json = objectMapper.writeValueAsString(dto1);
 
         //Email address
-        dto2 = new ContactPointDto();
+        dto2 = getBillingEmail();
         dto2.setCustomerId(customerId);
-        dto2.setContactPointType(ContactPointDto.TYPE_BILLING_EMAIL);
-        dto2.setEmail("zbeeblebrox@galaxy.gov");
-
         dto2Json = objectMapper.writeValueAsString(dto2);
 
         //US Phone Number
-        dto3 = new ContactPointDto();
+        dto3 = getBillingPhone();
         dto3.setCustomerId(customerId);
-        dto3.setContactPointType(ContactPointDto.TYPE_BILLING_PHONE);
-        dto3.setPhoneNumber("6145551212");
-        dto3.setCountryCode(COUNTRY_CODE_US);
-
         dto3Json = objectMapper.writeValueAsString(dto3);
     }
 
