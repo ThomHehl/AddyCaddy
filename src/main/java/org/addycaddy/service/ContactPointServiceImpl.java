@@ -68,6 +68,20 @@ public class ContactPointServiceImpl implements ContactPointService{
         return contactPoint;
     }
 
+    private List<ContactPointDto> toDto(List<ContactPoint> contactPoints) {
+        List<ContactPointDto> result = new ArrayList<>(contactPoints.size());
+
+        contactPoints.forEach(contactPoint -> {
+            if(contactPoint.isInPlay()) {
+                ContactPointDto dto = toDto(contactPoint);
+                result.add(dto);
+            }
+        });
+
+        return result;
+    }
+
+
     private ContactPointDto toDto(ContactPoint contactPoint) {
         ContactPointDto result = null;
 
@@ -92,14 +106,29 @@ public class ContactPointServiceImpl implements ContactPointService{
     public List<ContactPointDto> findByCustomerId(String customerId) {
         List<ContactPoint> contactPoints = contactPointRepository.findByCustomerId(customerId);
 
-        List<ContactPointDto> result = new ArrayList<>(contactPoints.size());
-        contactPoints.forEach(contactPoint -> {
-            if(contactPoint.isInPlay()) {
-                ContactPointDto dto = toDto(contactPoint);
-                result.add(dto);
-            }
-        });
+        List<ContactPointDto> result = toDto(contactPoints);
 
+        return result;
+    }
+
+    @Override
+    public List<ContactPointDto> findByEmail(String email) {
+        List<ContactPoint> contactPoints = contactPointRepository.findByEmailAddressEmail(email);
+        List<ContactPointDto> result = toDto(contactPoints);
+        return result;
+    }
+
+    @Override
+    public List<ContactPointDto> findByPhone(String phoneNumber) {
+        List<ContactPoint> contactPoints = contactPointRepository.findByPhonePhoneNumber(phoneNumber);
+        List<ContactPointDto> result = toDto(contactPoints);
+        return result;
+    }
+
+    @Override
+    public List<ContactPointDto> findByPostalCode(String postalCode) {
+        List<ContactPoint> contactPoints = contactPointRepository.findByAddressPostalCode(postalCode);
+        List<ContactPointDto> result = toDto(contactPoints);
         return result;
     }
 

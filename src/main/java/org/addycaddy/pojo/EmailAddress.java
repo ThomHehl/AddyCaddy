@@ -1,19 +1,18 @@
 package org.addycaddy.pojo;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Table(indexes = { @Index(name = "EMAIL_ADDR_EMAIL_IDX", columnList=EmailAddress.COL_EMAIL, unique = false) })
 public class EmailAddress {
+    public static final String          COL_EMAIL = "email";
 
     @Id
     @GeneratedValue
     private Long                        id;
 
-    @Column(nullable = false)
+    @Column(name = COL_EMAIL, nullable = false)
     private String                      email;
 
     public Long getId() {

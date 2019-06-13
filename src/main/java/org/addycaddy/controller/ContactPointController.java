@@ -29,8 +29,13 @@ public class ContactPointController implements ErrorController {
 
     @RequestMapping(value = AddyCaddyConstants.PATH_CREATE, method = { RequestMethod.POST })
     @ResponseBody
-    public String create(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) String contactPointJson) throws IOException {
-        ContactPointDto contactPointDto = objectMapper.readValue(contactPointJson, ContactPointDto.class);
+    public String create(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) String contactPointJson) {
+        ContactPointDto contactPointDto = null;
+        try {
+            contactPointDto = objectMapper.readValue(contactPointJson, ContactPointDto.class);
+        } catch (IOException ioe) {
+            throw new RuntimeException("Error parsing JSON:" + contactPointJson, ioe);
+        }
 
         String result;
 
@@ -65,10 +70,43 @@ public class ContactPointController implements ErrorController {
         return result;
     }
 
+    @RequestMapping(value = AddyCaddyConstants.PATH_SEARCH, method = { RequestMethod.GET })
+    @ResponseBody
+    public List<ContactPointDto> search(@RequestParam(AddyCaddyConstants.SEARCH_BY) String searchBy,
+                                        @RequestParam(AddyCaddyConstants.SEARCH_KEY) String searchKey) {
+        List<ContactPointDto> result;
+
+        switch (searchBy) {
+            case AddyCaddyConstants.SEARCH_BY_EMAIL:
+                result = contactPointService.findByEmail(searchKey);
+                break;
+
+            case AddyCaddyConstants.SEARCH_BY_PHONE:
+                result = contactPointService.findByPhone(searchKey);
+                break;
+
+            case AddyCaddyConstants.SEARCH_BY_POSTAL_CODE:
+                result = contactPointService.findByPostalCode(searchKey);
+                break;
+
+            default:
+                result = new ArrayList<>();
+        }
+
+        return result;
+    }
+
     @RequestMapping(value = AddyCaddyConstants.PATH_UPDATE, method = { RequestMethod.POST })
     @ResponseBody
-    public String update(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) String contactPointJson) throws IOException {
-        ContactPointDto contactPointDto = objectMapper.readValue(contactPointJson, ContactPointDto.class);
+    public String update(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) String contactPointJson) {
+        ContactPointDto contactPointDto = null;
+        try {
+            contactPointDto = objectMapper.readValue(contactPointJson, ContactPointDto.class);
+        } catch (IOException ioe) {
+            String msg = "Error parsing JSON:" + contactPointJson;
+            throw new RuntimeException(msg, ioe);
+        }
+
         String result;
 
         if (StringUtils.isEmpty(contactPointDto.getAddressId())) {

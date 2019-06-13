@@ -4,17 +4,20 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Table(indexes = { @Index(name = "PHONE_PHONE_NUMBER_IDX", columnList=Phone.COL_PHONE_NUMBER, unique = false) })
 public class Phone {
+    public static final String          COL_COUNTRY_CODE = Address.COL_COUNTRY_CODE;
+    public static final String          COL_PHONE_NUMBER = "phone_number";
 
     @Id
     @GeneratedValue
     private Long                        id;
 
-    @Column(nullable = false)
+    @Column(name = COL_COUNTRY_CODE, nullable = false)
     @Enumerated(EnumType.STRING)
     private CountryCode                 countryCode;
 
-    @Column(nullable = false)
+    @Column(name = COL_PHONE_NUMBER, nullable = false)
     private String                      phoneNumber;
 
     public Long getId() {

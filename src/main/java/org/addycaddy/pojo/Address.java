@@ -4,7 +4,10 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Table(indexes = { @Index(name = "ADDR_POST_CODE_IDX", columnList=Address.COL_POSTAL_CODE, unique = false) })
 public class Address {
+    public static final String          COL_COUNTRY_CODE = "country_code";
+    public static final String          COL_POSTAL_CODE = "postal_code";
     public static final String          COUNTRY_CODE_US = "US";
 
     @Id
@@ -26,14 +29,14 @@ public class Address {
     @Column(nullable = false)
     private String                      city;
 
-    @Column(nullable = false)
+    @Column(name = COL_COUNTRY_CODE, nullable = false)
     @Enumerated(EnumType.STRING)
     private CountryCode                 countryCode = CountryCode.US;
 
     @Column(nullable = false)
     private String                      state;
 
-    @Column(nullable = false)
+    @Column(name = COL_POSTAL_CODE, nullable = false)
     private String                      postalCode;
 
     public Long getId() {

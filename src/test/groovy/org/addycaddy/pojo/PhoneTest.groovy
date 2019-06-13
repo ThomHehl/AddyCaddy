@@ -8,8 +8,8 @@ class PhoneTest extends Specification {
     static Phone getPhone() {
         Phone result = new Phone()
 
-        result.countryCode = CountryCode.UnitedStates
-        result.phone = "8595551212"
+        result.countryCode = CountryCode.US
+        result.phoneNumber = "8595551212"
 
         return result
     }
@@ -17,8 +17,8 @@ class PhoneTest extends Specification {
     static Phone getPhone2() {
         Phone result = new Phone()
 
-        result.countryCode = CountryCode.UnitedStates
-        result.phone = "7405551212"
+        result.countryCode = CountryCode.US
+        result.phoneNumber = "7405551212"
 
         return result
     }

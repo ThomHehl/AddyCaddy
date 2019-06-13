@@ -1,5 +1,8 @@
 package org.addycaddy.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.addycaddy.client.dto.AddyCaddyConstants;
 import org.addycaddy.client.dto.ContactPointDto;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,11 +25,18 @@ public class ContactPointControllerIntegrationTest {
 
     private String                      customerId;
     private ContactPointDto             dto1;
+    private ContactPointDto             dto2;
+    private ContactPointDto             dto3;
+    private String                      dto1Json;
+    private String                      dto2Json;
+    private String                      dto3Json;
+    private ObjectMapper                objectMapper = new ObjectMapper();
 
     @Before
-    public void setUp() {
+    public void setUp() throws JsonProcessingException {
         customerId = "zbeeblebrox";
 
+        //US Postal address
         dto1 = new ContactPointDto();
         dto1.setCustomerId(customerId);
         dto1.setCountryCode(COUNTRY_CODE_US);
@@ -38,28 +48,36 @@ public class ContactPointControllerIntegrationTest {
         dto1.setCity("Columbus");
         dto1.setState("OH");
         dto1.setPostalCode("42315");
+        dto1Json = objectMapper.writeValueAsString(dto1);
 
-    }
-
-    @Test
-    public void testCrud() {
-        //create address
-        assertEquals(ContactPointController.SUCCESS, controller.create(dto1));
-
-        //create email
-        ContactPointDto dto2 = new ContactPointDto();
+        //Email address
+        dto2 = new ContactPointDto();
         dto2.setCustomerId(customerId);
         dto2.setContactPointType(ContactPointDto.TYPE_BILLING_EMAIL);
         dto2.setEmail("zbeeblebrox@galaxy.gov");
-        assertEquals(ContactPointController.SUCCESS, controller.create(dto2));
 
-        //create phone
-        ContactPointDto dto3 = new ContactPointDto();
+        dto2Json = objectMapper.writeValueAsString(dto2);
+
+        //US Phone Number
+        dto3 = new ContactPointDto();
         dto3.setCustomerId(customerId);
         dto3.setContactPointType(ContactPointDto.TYPE_BILLING_PHONE);
         dto3.setPhoneNumber("6145551212");
         dto3.setCountryCode(COUNTRY_CODE_US);
-        assertEquals(ContactPointController.SUCCESS, controller.create(dto3));
+
+        dto3Json = objectMapper.writeValueAsString(dto3);
+    }
+
+    @Test
+    public void testCrud() throws JsonProcessingException {
+        //create address
+        assertEquals(AddyCaddyConstants.RESPONSE_SUCCESS, controller.create(dto1Json));
+
+        //create email
+        assertEquals(AddyCaddyConstants.RESPONSE_SUCCESS, controller.create(dto2Json));
+
+        //create phone
+        assertEquals(AddyCaddyConstants.RESPONSE_SUCCESS, controller.create(dto3Json));
 
         List<ContactPointDto> dtoList = controller.findByCustomerId(customerId);
         assertEquals(3, dtoList.size());
@@ -96,7 +114,9 @@ public class ContactPointControllerIntegrationTest {
         String num2 = "6142491212";
         dto3.setPhoneNumber(num2);
         dto3.setCountryCode(COUNTRY_CODE_US);
-        assertEquals(ContactPointController.SUCCESS, controller.create(dto3));
+
+        dto3Json = objectMapper.writeValueAsString(dto3);
+        assertEquals(AddyCaddyConstants.RESPONSE_SUCCESS, controller.create(dto3Json));
 
         dtoList = controller.findByCustomerId(customerId);
         assertEquals(3, dtoList.size());
@@ -133,7 +153,9 @@ public class ContactPointControllerIntegrationTest {
 
         String num3 = "6142495411";
         dto3.setPhoneNumber(num3);
-        assertEquals(ContactPointController.SUCCESS, controller.update(dto3));
+
+        dto3Json = objectMapper.writeValueAsString(dto3);
+        assertEquals(AddyCaddyConstants.RESPONSE_SUCCESS, controller.update(dto3Json));
 
         dtoList = controller.findByCustomerId(customerId);
         assertEquals(3, dtoList.size());
@@ -163,5 +185,41 @@ public class ContactPointControllerIntegrationTest {
         assertTrue(foundAddr);
         assertTrue(foundEmail);
         assertTrue(foundPhone);
+    }
+
+    @Test
+    public void testSearch() throws JsonProcessingException {
+        //create address
+        assertEquals(AddyCaddyConstants.RESPONSE_SUCCESS, controller.create(dto1Json));
+
+        //create email
+        assertEquals(AddyCaddyConstants.RESPONSE_SUCCESS, controller.create(dto2Json));
+
+        //create phone
+        assertEquals(AddyCaddyConstants.RESPONSE_SUCCESS, controller.create(dto3Json));
+
+        //search by email
+        List<ContactPointDto> dtoList = controller.search(AddyCaddyConstants.SEARCH_BY_EMAIL, "Who dey?");
+        assertTrue(dtoList.isEmpty());
+
+        dtoList = controller.search(AddyCaddyConstants.SEARCH_BY_EMAIL, dto2.getEmail());
+        assertEquals(1, dtoList.size());
+        assertEquals(dto2.getEmail(), dtoList.get(0).getEmail());
+
+        //search by phone
+        dtoList = controller.search(AddyCaddyConstants.SEARCH_BY_PHONE, "Who dey?");
+        assertTrue(dtoList.isEmpty());
+
+        dtoList = controller.search(AddyCaddyConstants.SEARCH_BY_PHONE, dto3.getPhoneNumber());
+        assertEquals(1, dtoList.size());
+        assertEquals(dto3.getPhoneNumber(), dtoList.get(0).getPhoneNumber());
+
+        //search by postal code
+        dtoList = controller.search(AddyCaddyConstants.SEARCH_BY_POSTAL_CODE, "Who dey?");
+        assertTrue(dtoList.isEmpty());
+
+        dtoList = controller.search(AddyCaddyConstants.SEARCH_BY_POSTAL_CODE, dto1.getPostalCode());
+        assertEquals(1, dtoList.size());
+        assertEquals(dto1.getPostalCode(), dtoList.get(0).getPostalCode());
     }
 }
