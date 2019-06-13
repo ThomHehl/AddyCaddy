@@ -1,5 +1,6 @@
 package org.addycaddy.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.addycaddy.client.dto.AddyCaddyConstants;
 import org.addycaddy.client.dto.ContactPointDto;
 import org.addycaddy.service.ContactPointService;
@@ -11,6 +12,7 @@ import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,23 +21,25 @@ import java.util.List;
 public class ContactPointController implements ErrorController {
     private static final Logger         log = LoggerFactory.getLogger(ContactPointController.class);
 
-    public static final String          FAILURE = "failure";
-    public static final String          SUCCESS = "success";
-
     @Autowired
     private ContactPointService         contactPointService;
 
+    @Autowired
+    private ObjectMapper                objectMapper;
+
     @RequestMapping(value = AddyCaddyConstants.PATH_CREATE, method = { RequestMethod.POST })
     @ResponseBody
-    public String create(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) ContactPointDto contactPointDto) {
+    public String create(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) String contactPointJson) throws IOException {
+        ContactPointDto contactPointDto = objectMapper.readValue(contactPointJson, ContactPointDto.class);
+
         String result;
 
         try {
             contactPointService.create(contactPointDto);
-            result = SUCCESS;
+            result = AddyCaddyConstants.RESPONSE_SUCCESS;
         } catch (Throwable tw) {
             log.error("Error creating contact point:" + contactPointDto, tw);
-            result = FAILURE;
+            result = AddyCaddyConstants.RESPONSE_FAILURE;
         }
 
         return result;
@@ -63,19 +67,20 @@ public class ContactPointController implements ErrorController {
 
     @RequestMapping(value = AddyCaddyConstants.PATH_UPDATE, method = { RequestMethod.POST })
     @ResponseBody
-    public String update(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) ContactPointDto contactPointDto) {
+    public String update(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINT) String contactPointJson) throws IOException {
+        ContactPointDto contactPointDto = objectMapper.readValue(contactPointJson, ContactPointDto.class);
         String result;
 
         if (StringUtils.isEmpty(contactPointDto.getAddressId())) {
-            result = FAILURE;
+            result = AddyCaddyConstants.RESPONSE_FAILURE;
         }
         else {
             try {
                 contactPointService.update(contactPointDto);
-                result = SUCCESS;
+                result = AddyCaddyConstants.RESPONSE_SUCCESS;
             } catch (Throwable tw) {
                 log.error("Error updating contact point:" + contactPointDto, tw);
-                result = FAILURE;
+                result = AddyCaddyConstants.RESPONSE_FAILURE;
             }
         }
 

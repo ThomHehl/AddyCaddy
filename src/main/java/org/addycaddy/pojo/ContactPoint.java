@@ -31,6 +31,9 @@ public class ContactPoint {
     @Column(nullable = false, name = COL_CUSTOMER_ID)
     private String                      customerId;
 
+    @Column(nullable = true)
+    private String                      otherId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ContactPointType            contactPointType;
@@ -72,6 +75,14 @@ public class ContactPoint {
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
+    }
+
+    public String getOtherId() {
+        return otherId;
+    }
+
+    public void setOtherId(String otherId) {
+        this.otherId = otherId;
     }
 
     public ContactPointType getContactPointType() {
