@@ -18,6 +18,16 @@ class ContactPointTest extends Specification {
         return result
     }
 
+    static ContactPoint getBusinessPhone() {
+        ContactPoint result = new ContactPoint()
+
+        result.contactPointType = ContactPointType.BusinessPhone
+        result.startDate = new LocalDate(1970, 01, 01)
+        result.phone = PhoneTest.phone
+
+        return result
+    }
+
     static ContactPoint getHomePhone() {
         ContactPoint result = new ContactPoint()
 
@@ -31,7 +41,7 @@ class ContactPointTest extends Specification {
     static ContactPoint getLocation() {
         ContactPoint result = new ContactPoint()
 
-        result.contactPointType = ContactPointType.Location
+        result.contactPointType = ContactPointType.LocationAddress
         result.startDate = new LocalDate(1970, 01, 01)
         result.address = AddressTest.address2
 
@@ -41,7 +51,7 @@ class ContactPointTest extends Specification {
     static ContactPoint getLocation2() {
         ContactPoint result = new ContactPoint()
 
-        result.contactPointType = ContactPointType.Location
+        result.contactPointType = ContactPointType.LocationAddress
         result.startDate = new LocalDate(1970, 01, 01)
         result.address = AddressTest.address
 

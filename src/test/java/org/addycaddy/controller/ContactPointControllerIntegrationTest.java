@@ -56,7 +56,7 @@ public class ContactPointControllerIntegrationTest {
         ContactPointDto result = new ContactPointDto();
 
         result.setCountryCode(COUNTRY_CODE_US);
-        result.setContactPointType(ContactPointDto.TYPE_LOCATION);
+        result.setContactPointType(ContactPointDto.TYPE_LOCATION_ADDR);
         result.setAttention("Billing Dept.");
         result.setName("Zaphod Beeblebrox");
         result.setStreet1("100 N. High St.");
@@ -109,7 +109,7 @@ public class ContactPointControllerIntegrationTest {
             assertEquals(customerId, dto.getCustomerId());
             assertNotNull(dto.getAddressId());
             switch (dto.getContactPointType()) {
-                case ContactPointDto.TYPE_LOCATION:
+                case ContactPointDto.TYPE_LOCATION_ADDR:
                     foundAddr = true;
                     break;
 
@@ -149,7 +149,7 @@ public class ContactPointControllerIntegrationTest {
             assertEquals(customerId, dto.getCustomerId());
             assertNotNull(dto.getAddressId());
             switch (dto.getContactPointType()) {
-                case ContactPointDto.TYPE_LOCATION:
+                case ContactPointDto.TYPE_LOCATION_ADDR:
                     foundAddr = true;
                     break;
 
@@ -187,7 +187,7 @@ public class ContactPointControllerIntegrationTest {
             assertEquals(customerId, dto.getCustomerId());
             assertNotNull(dto.getAddressId());
             switch (dto.getContactPointType()) {
-                case ContactPointDto.TYPE_LOCATION:
+                case ContactPointDto.TYPE_LOCATION_ADDR:
                     foundAddr = true;
                     break;
 

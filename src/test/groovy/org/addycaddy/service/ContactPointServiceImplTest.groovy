@@ -6,9 +6,11 @@ import org.addycaddy.pojo.ContactPoint
 import org.addycaddy.pojo.ContactPointTest
 import org.addycaddy.pojo.ContactPointType
 import org.addycaddy.repository.ContactPointRepository
+import org.junit.Assert
 import spock.lang.Specification
 
 class ContactPointServiceImplTest extends Specification {
+    static final String                 CUSTOMER_ID = "Go, Bucks!"
     ContactPointRepository              contactPointRepository
     ContactPointServiceImpl             service
 
@@ -19,12 +21,10 @@ class ContactPointServiceImplTest extends Specification {
         service.contactPointRepository = contactPointRepository
     }
 
-    def "Create first"() {
-        given: "A contact point"
+    static ContactPointDto getBillingAddress() {
         ContactPointDto dto = new ContactPointDto()
         dto.contactPointType = ContactPointDto.TYPE_BILLING_ADDR
-        String customerId = "Go, Bucks!"
-        dto.customerId = customerId
+        dto.customerId = CUSTOMER_ID
         dto.attention = "Billing Department"
         dto.name = "Ford Prefect"
         dto.street1 = "120 S Main St"
@@ -35,15 +35,22 @@ class ContactPointServiceImplTest extends Specification {
         dto.countryCode = "US"
         dto.phoneNumber = "614-555-1212"
 
+        return dto
+    }
+
+    def "Create first"() {
+        given: "A contact point"
+        ContactPointDto dto = getBillingAddress()
+
         when: "Creating the contact point"
         ContactPointDto result = service.create(dto)
 
         then: "Should return everything"
-        1 * contactPointRepository.findByCustomerId(customerId) >> []
+        1 * contactPointRepository.findByCustomerId(CUSTOMER_ID) >> []
         1 * contactPointRepository.saveAndFlush(_) >> { ContactPoint cp ->
             cp.id = 42L
-            cp.contactPointType = ContactPointType.BillingAddress
-            cp.address != null
+            Assert.assertEquals(ContactPointType.BillingAddress, cp.contactPointType)
+            Assert.assertNotNull(cp.address)
             return cp
         }
 
@@ -60,33 +67,21 @@ class ContactPointServiceImplTest extends Specification {
 
     def "Create second"() {
         given: "A billing address"
-        ContactPointDto dto = new ContactPointDto()
-        dto.contactPointType = ContactPointDto.TYPE_BILLING_ADDR
-        String customerId = "Go, Bucks!"
-        dto.customerId = customerId
-        dto.attention = "Billing Department"
-        dto.name = "Ford Prefect"
-        dto.street1 = "120 S Main St"
-        dto.street2 = "Suite 5"
-        dto.city = "Columbus"
-        dto.state = "OH"
-        dto.postalCode = "43215"
-        dto.countryCode = "US"
-        dto.phoneNumber = "614-555-1212"
+        ContactPointDto dto = getBillingAddress()
 
         and: "An existing business email"
         ContactPoint businessEmail = ContactPointTest.workEmail
-        businessEmail.customerId = customerId
+        businessEmail.customerId = CUSTOMER_ID
 
         when: "Creating the contact point"
         ContactPointDto result = service.create(dto)
 
         then: "Should be return everything"
-        1 * contactPointRepository.findByCustomerId(customerId) >> [businessEmail]
+        1 * contactPointRepository.findByCustomerId(CUSTOMER_ID) >> [businessEmail]
         1 * contactPointRepository.saveAndFlush(_) >> { ContactPoint cp ->
             cp.id = 42L
-            cp.contactPointType = ContactPointType.BillingAddress
-            cp.address != null
+            Assert.assertEquals(ContactPointType.BillingAddress, cp.contactPointType)
+            Assert.assertNotNull(cp.address)
             return cp
         }
 
@@ -103,25 +98,13 @@ class ContactPointServiceImplTest extends Specification {
 
     def "Create replacement billing address"() {
         given: "A billing address"
-        ContactPointDto dto = new ContactPointDto()
-        dto.contactPointType = ContactPointDto.TYPE_BILLING_ADDR
-        String customerId = "Go, Bucks!"
-        dto.customerId = customerId
-        dto.attention = "Billing Department"
-        dto.name = "Ford Prefect"
-        dto.street1 = "120 S Main St"
-        dto.street2 = "Suite 5"
-        dto.city = "Columbus"
-        dto.state = "OH"
-        dto.postalCode = "43215"
-        dto.countryCode = "US"
-        dto.phoneNumber = "614-555-1212"
+        ContactPointDto dto = getBillingAddress()
 
         and: "An existing billing address"
         ContactPoint billingAddress = ContactPointTest.billingAddress
         Long oldId = 1776
         billingAddress.setId(oldId)
-        billingAddress.customerId = customerId
+        billingAddress.customerId = CUSTOMER_ID
         boolean replacedOld = false
         boolean savedNew = false
 
@@ -129,17 +112,17 @@ class ContactPointServiceImplTest extends Specification {
         ContactPointDto result = service.create(dto)
 
         then: "Should return everything"
-        1 * contactPointRepository.findByCustomerId(customerId) >> [billingAddress]
+        1 * contactPointRepository.findByCustomerId(CUSTOMER_ID) >> [billingAddress]
         2 * contactPointRepository.saveAndFlush(_) >> { ContactPoint cp ->
             if (cp.id == oldId) {
                 replacedOld = true
-                !cp.inPlay
+                Assert.assertFalse(cp.inPlay)
             }
             else {
                 savedNew = true
                 cp.id = 42L
-                cp.contactPointType == ContactPointType.BillingAddress
-                cp.address != null
+                Assert.assertEquals(ContactPointType.BillingAddress, cp.contactPointType)
+                Assert.assertNotNull(cp.address)
             }
             return cp
         }
@@ -157,6 +140,87 @@ class ContactPointServiceImplTest extends Specification {
         result.postalCode == dto.postalCode
         result.countryCode == dto.countryCode
     }
+
+    def "Create array"() {
+        given: "A contact point"
+        ContactPointDto dto = getBillingAddress()
+        ContactPointDto dto2 = getBillingAddress()
+        dto2.setContactPointType(ContactPointDto.TYPE_BUSINESS_PHONE)
+        ContactPointDto[] dtos = new ContactPointDto[2];
+        dtos[0] = dto
+        dtos[1] = dto2
+
+        List<ContactPointType> foundTypes = new ArrayList<>()
+        foundTypes.add(dto.getContactPointType())
+        foundTypes.add(dto2.getContactPointType())
+
+        when: "Creating the contact point"
+        ContactPointDto[] result = service.create(dtos)
+
+        then: "Should return everything"
+        1 * contactPointRepository.findByCustomerIdIn(_) >> []
+        1 * contactPointRepository.saveAll(_) >> { contactPointList ->
+            //something screwy here, have to unroll the list
+            List<ContactPoint> contactPoints = contactPointList.get(0)
+            Assert.assertEquals(contactPoints.toString(), 2, contactPoints.size())
+
+            for (ContactPoint contactPoint : contactPoints) {
+                Assert.assertNotNull(contactPoint.externalId)
+                Assert.assertTrue(foundTypes.remove(contactPoint.getContactPointType().toString()))
+            }
+            return contactPoints
+        }
+
+        result.length == 2
+        foundTypes.isEmpty()
+    }
+
+    def "Create array replacing existing"() {
+        given: "A contact point"
+        ContactPointDto dto = getBillingAddress()
+        ContactPointDto dto2 = getBillingAddress()
+        dto2.setContactPointType(ContactPointDto.TYPE_BUSINESS_PHONE)
+        ContactPointDto[] dtos = new ContactPointDto[2];
+        dtos[0] = dto
+        dtos[1] = dto2
+
+        List<ContactPointType> foundTypes = new ArrayList<>()
+        foundTypes.add(dto.getContactPointType())
+        foundTypes.add(dto2.getContactPointType())
+
+        and: "An existing email"
+        ContactPoint workEmail = ContactPointTest.businessPhone
+        workEmail.setCustomerId(CUSTOMER_ID)
+        final long oldId = 1215
+        workEmail.setId(oldId)
+
+        when: "Creating the contact point"
+        ContactPointDto[] result = service.create(dtos)
+
+        then: "Should return everything"
+        1 * contactPointRepository.findByCustomerIdIn(_) >> [workEmail]
+        1 * contactPointRepository.saveAll(_) >> { contactPointList ->
+            //something screwy here, have to unroll the list
+            List<ContactPoint> contactPoints = contactPointList.get(0)
+            Assert.assertEquals(contactPoints.toString(), 3, contactPoints.size())
+
+            for (ContactPoint contactPoint : contactPoints) {
+                if (oldId == contactPoint.getId()) {
+                    Assert.assertEquals(ContactPointType.BusinessPhone, contactPoint.contactPointType);
+                    Assert.assertNotNull(contactPoint.getEndDate())
+                    Assert.assertFalse(contactPoint.isInPlay())
+                }
+                else {
+                    Assert.assertTrue(foundTypes.remove(contactPoint.getContactPointType().toString()))
+                }
+            }
+            return contactPoints
+        }
+
+        result.length == 2
+        foundTypes.isEmpty()
+    }
+
 
     def "Find by customer ID"() {
         given: "A customer ID and some contact points"
@@ -243,27 +307,15 @@ class ContactPointServiceImplTest extends Specification {
 
     def "Update billing address"() {
         given: "A billing address"
-        ContactPointDto dto = new ContactPointDto()
-        dto.contactPointType = ContactPointDto.TYPE_BILLING_ADDR
-        String customerId = "Go, Bucks!"
-        dto.customerId = customerId
-        String externalId = "Who dey?"
+        ContactPointDto dto = getBillingAddress()
+        final String externalId = "Who dey?"
         dto.addressId = externalId
-        dto.attention = "Billing Department"
-        dto.name = "Ford Prefect"
-        dto.street1 = "120 S Main St"
-        dto.street2 = "Suite 5"
-        dto.city = "Columbus"
-        dto.state = "OH"
-        dto.postalCode = "43215"
-        dto.countryCode = "US"
-        dto.phoneNumber = "614-555-1212"
 
         and: "An existing billing address"
         ContactPoint billingAddress = ContactPointTest.billingAddress
         Long oldId = 1776
         billingAddress.id = oldId
-        billingAddress.customerId = customerId
+        billingAddress.customerId = CUSTOMER_ID
         billingAddress.externalId = externalId
 
         when: "Creating the contact point"
@@ -273,8 +325,8 @@ class ContactPointServiceImplTest extends Specification {
         1 * contactPointRepository.findByExternalId(externalId) >> billingAddress
         1 * contactPointRepository.saveAndFlush(billingAddress) >> { ContactPoint cp ->
             cp.id = 42L
-            cp.contactPointType == ContactPointType.BillingAddress
-            cp.address != null
+            Assert.assertEquals(ContactPointType.BillingAddress, cp.contactPointType)
+            Assert.assertNotNull(cp.address)
             return cp
         }
 
@@ -292,27 +344,15 @@ class ContactPointServiceImplTest extends Specification {
 
     def "Update billing address not found"() {
         given: "A billing address"
-        ContactPointDto dto = new ContactPointDto()
-        dto.contactPointType = ContactPointDto.TYPE_BILLING_ADDR
-        String customerId = "Go, Bucks!"
-        dto.customerId = customerId
+        ContactPointDto dto = getBillingAddress()
         String externalId = "Who dey?"
         dto.addressId = externalId
-        dto.attention = "Billing Department"
-        dto.name = "Ford Prefect"
-        dto.street1 = "120 S Main St"
-        dto.street2 = "Suite 5"
-        dto.city = "Columbus"
-        dto.state = "OH"
-        dto.postalCode = "43215"
-        dto.countryCode = "US"
-        dto.phoneNumber = "614-555-1212"
 
         and: "An existing billing address"
         ContactPoint billingAddress = ContactPointTest.billingAddress
         Long oldId = 1776
         billingAddress.id = oldId
-        billingAddress.customerId = customerId
+        billingAddress.customerId = CUSTOMER_ID
         billingAddress.externalId = externalId
 
         when: "Creating the contact point"
@@ -324,5 +364,100 @@ class ContactPointServiceImplTest extends Specification {
 
         AddyCaddyException ace = thrown()
         ace != null
+    }
+
+    def "Update array"() {
+        given: "Some contact point dtos"
+        ContactPointDto dto = getBillingAddress()
+        final String addrId1 = "Who dey?"
+        dto.addressId = addrId1
+
+        ContactPointDto dto2 = getBillingAddress()
+        dto2.setContactPointType(ContactPointDto.TYPE_BUSINESS_PHONE)
+        final String addrId2 = "Don't Panic!"
+        dto2.addressId = addrId2
+
+        ContactPointDto[] dtos = new ContactPointDto[2];
+        dtos[0] = dto
+        dtos[1] = dto2
+
+        List<String> updatedIds = [addrId1, addrId2]
+
+        and: "Some contact points"
+        ContactPoint cp1 = ContactPointTest.billingAddress
+        cp1.setExternalId(addrId1)
+
+        ContactPoint cp2 = ContactPointTest.businessPhone
+        cp2.setExternalId(addrId2)
+
+        when: "Creating the contact point"
+        ContactPointDto[] result = service.update(dtos)
+
+        then: "Should return everything"
+        1 * contactPointRepository.findByExternalIdIn(_) >> [cp1, cp2]
+        1 * contactPointRepository.saveAll(_) >> { contactPointList ->
+            //something screwy here, have to unroll the list
+            List<ContactPoint> contactPoints = contactPointList.get(0)
+            Assert.assertEquals(contactPoints.toString(), 2, contactPoints.size())
+
+            for (ContactPoint contactPoint : contactPoints) {
+                Assert.assertTrue(updatedIds.remove(contactPoint.getExternalId()))
+            }
+            return contactPoints
+        }
+
+        result.length == 2
+        updatedIds.isEmpty()
+    }
+
+    def "Update array replacing existing"() {
+        given: "A contact point"
+        ContactPointDto dto = getBillingAddress()
+        final String addrId1 = "Who dey?"
+        dto.addressId = addrId1
+
+        ContactPointDto dto2 = getBillingAddress()
+        dto2.setContactPointType(ContactPointDto.TYPE_BUSINESS_PHONE)
+        final String addrId2 = "Don't Panic!"
+        dto2.addressId = addrId2
+
+        ContactPointDto[] dtos = new ContactPointDto[2];
+        dtos[0] = dto
+        dtos[1] = dto2
+
+        and: "Some contact points"
+        ContactPoint cp1 = ContactPointTest.billingAddress
+        cp1.setExternalId(addrId1)
+        final long id1 = 31
+        cp1.setId(id1)
+
+        ContactPoint cp2 = ContactPointTest.businessPhone
+        cp2.setExternalId(addrId2)
+        final long id2 = 32
+        cp2.setId(id2)
+
+        List<Long> idList = new ArrayList<>()
+        idList.add(id1)
+        idList.add(id2)
+
+        when: "Creating the contact point"
+        ContactPointDto[] result = service.update(dtos)
+
+        then: "Should update everything"
+        1 * contactPointRepository.findByExternalIdIn(_) >> [cp1, cp2]
+        1 * contactPointRepository.saveAll(_) >> { contactPointList ->
+            //something screwy here, have to unroll the list
+            List<ContactPoint> contactPoints = contactPointList.get(0)
+            Assert.assertEquals(contactPoints.toString(), 2, contactPoints.size())
+
+            for (ContactPoint contactPoint : contactPoints) {
+                Assert.assertNotNull(contactPoint.getExternalId())
+                Assert.assertTrue(idList.remove(contactPoint.getId()))
+            }
+            return contactPoints
+        }
+
+        result.length == 2
+        idList.isEmpty()
     }
 }

@@ -1,9 +1,12 @@
 package org.addycaddy.service;
 
+import com.heavyweightsoftware.exception.HeavyweightException;
+import com.heavyweightsoftware.util.MultimapList;
 import org.addycaddy.client.dto.ContactPointDto;
 import org.addycaddy.exception.AddyCaddyException;
 import org.addycaddy.pojo.*;
 import org.addycaddy.repository.ContactPointRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
 import org.slf4j.Logger;
@@ -12,8 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ContactPointServiceImpl implements ContactPointService{
@@ -28,7 +30,6 @@ public class ContactPointServiceImpl implements ContactPointService{
     public ContactPointDto create(ContactPointDto contactPointDto)
             throws AddyCaddyException {
 
-
         String customerId = contactPointDto.getCustomerId();
         List<ContactPoint> oldContactPoints = contactPointRepository.findByCustomerId(customerId);
 
@@ -41,7 +42,6 @@ public class ContactPointServiceImpl implements ContactPointService{
         });
 
         ContactPoint contactPoint = fromDto(contactPointDto);
-        contactPoint.setExternalId();
         contactPoint.setStartDate();
         contactPoint = contactPointRepository.saveAndFlush(contactPoint);
 
@@ -49,8 +49,70 @@ public class ContactPointServiceImpl implements ContactPointService{
         return result;
     }
 
+    @Override
+    public ContactPointDto[] create(ContactPointDto[] contactPointDtos) throws AddyCaddyException {
+        Map<String, List<ContactPoint>> newContactPointMap = mapByCustomer(contactPointDtos);
+
+        List<ContactPoint> oldContactPoints = contactPointRepository.findByCustomerIdIn(newContactPointMap.keySet());
+        Map<String, List<ContactPoint>> oldContactPointMap = new MultimapList<>();
+        oldContactPoints.forEach(cp -> {
+            String customerId = cp.getCustomerId();
+            List<ContactPoint> customerList = oldContactPointMap.get(customerId);
+            customerList.add(cp);
+        });
+
+        List<ContactPoint> toBeSaved = new ArrayList<>();
+        List<ContactPointDto> returnList = new ArrayList<>();
+
+        newContactPointMap.entrySet().forEach(entry ->{
+            final String customerId = entry.getKey();
+            List<ContactPoint> newContactPointList = entry.getValue();
+            newContactPointList.forEach(newContactPoint -> {
+                ContactPointType newtype = newContactPoint.getContactPointType();
+
+                oldContactPointMap.get(customerId).forEach(oldContactPoint -> {
+                    if (newtype == oldContactPoint.getContactPointType()) {
+                        oldContactPoint.setEndDate();
+                        toBeSaved.add(oldContactPoint);
+                    }
+                });
+
+                toBeSaved.add(newContactPoint);
+                ContactPointDto dto = toDto(newContactPoint);
+                returnList.add(dto);
+            });
+        });
+
+        contactPointRepository.saveAll(toBeSaved);
+        ContactPointDto[] result = new ContactPointDto[returnList.size()];
+        result = returnList.toArray(result);
+
+        return result;
+    }
+
+    private Map<String, List<ContactPoint>> mapByCustomer(ContactPointDto[] contactPointDtos) throws AddyCaddyException {
+        Map<String, List<ContactPoint>> result = new MultimapList<>();
+
+        for (ContactPointDto contactPointDto : contactPointDtos){
+            String customerId = contactPointDto.getCustomerId();
+            List<ContactPoint> contactPoints = result.get(customerId);
+            ContactPoint contactPoint = fromDto(contactPointDto);
+            contactPoint.setStartDate();
+            contactPoints.add(contactPoint);
+        }
+
+        return result;
+    }
+
     private ContactPoint fromDto(ContactPointDto contactPointDto) throws AddyCaddyException {
         ContactPoint contactPoint = mapper.map(contactPointDto, ContactPoint.class);
+
+        if (StringUtils.isEmpty(contactPointDto.getAddressId())) {
+            contactPoint.setExternalId();
+        }
+        else {
+            contactPoint.setExternalId(contactPointDto.getAddressId());
+        }
 
         if (contactPoint.isAddress()) {
             Address address = mapper.map(contactPointDto, Address.class);
@@ -80,7 +142,6 @@ public class ContactPointServiceImpl implements ContactPointService{
 
         return result;
     }
-
 
     private ContactPointDto toDto(ContactPoint contactPoint) {
         ContactPointDto result = null;
@@ -137,8 +198,16 @@ public class ContactPointServiceImpl implements ContactPointService{
         String externalId = contactPointDto.getAddressId();
 
         ContactPoint contactPoint = contactPointRepository.findByExternalId(externalId);
+        updateContactPoint(contactPoint, contactPointDto);
+        contactPoint = contactPointRepository.saveAndFlush(contactPoint);
+
+        ContactPointDto result = toDto(contactPoint);
+        return result;
+    }
+
+    private void updateContactPoint(ContactPoint contactPoint, ContactPointDto contactPointDto) throws AddyCaddyException {
         if (contactPoint == null) {
-            throw new AddyCaddyException("Contact Point not found for external ID:" + externalId);
+            throw new AddyCaddyException("Contact Point not found for external ID:" + contactPointDto.getAddressId());
         }
 
         if (contactPoint.isAddress()) {
@@ -161,10 +230,40 @@ public class ContactPointServiceImpl implements ContactPointService{
             phone.setPhoneNumber(contactPointDto.getPhoneNumber());
             phone.setCountryCode(CountryCode.valueOf(contactPointDto.getCountryCode()));
         }
+    }
 
-        contactPoint = contactPointRepository.saveAndFlush(contactPoint);
+    @Override
+    public ContactPointDto[] update(ContactPointDto[] contactPointDtos) throws AddyCaddyException {
+        Set<String> addressIds = new HashSet<>();
 
-        ContactPointDto result = toDto(contactPoint);
+        for (ContactPointDto dto : contactPointDtos) {
+            String addressId = dto.getAddressId();
+            if (StringUtils.isEmpty(addressId)) {
+                throw new AddyCaddyException("Unable to update with no address ID:" + dto.getAddressId());
+            }
+            addressIds.add(addressId);
+        }
+
+        List<ContactPoint> dbContactPoints = contactPointRepository.findByExternalIdIn(addressIds);
+        for (ContactPointDto dto : contactPointDtos) {
+            String addressId = dto.getAddressId();
+
+            ContactPoint dbContactPoint = null;
+            for (ContactPoint dbcp : dbContactPoints) {
+                if (addressId.equals(dbcp.getExternalId())) {
+                    dbContactPoint = dbcp;
+                    break;
+                }
+            }
+
+            updateContactPoint(dbContactPoint, dto);
+        }
+
+        dbContactPoints = contactPointRepository.saveAll(dbContactPoints);
+        List<ContactPointDto> resultList = toDto(dbContactPoints);
+        ContactPointDto[] result = new ContactPointDto[resultList.size()];
+        result = resultList.toArray(result);
+
         return result;
     }
 }

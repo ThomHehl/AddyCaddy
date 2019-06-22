@@ -56,6 +56,20 @@ class ContactPointControllerTest extends Specification {
         result.equals(AddyCaddyConstants.RESPONSE_SUCCESS)
     }
 
+    def "Create normal array"() {
+        given: "A contact point"
+        ContactPointDto dto = new ContactPointDto()
+        String dtoJson = objectMapper.writeValueAsString([dto])
+
+        when: "Creating the contact point"
+        String result = controller.createMany(dtoJson)
+
+        then: "Should be successful"
+        1 * contactPointService.create(_)
+
+        result.equals(AddyCaddyConstants.RESPONSE_SUCCESS)
+    }
+
     def "Update error"() {
         given: "A contact point"
         ContactPointDto dto = new ContactPointDto()
@@ -92,8 +106,23 @@ class ContactPointControllerTest extends Specification {
         dto.addressId = "Who dey?"
         String dtoJson = objectMapper.writeValueAsString(dto)
 
-        when: "Creating the contact point"
+        when: "Updating the contact point"
         String result = controller.update(dtoJson)
+
+        then: "Should be successful"
+        1 * contactPointService.update(_)
+
+        result.equals(AddyCaddyConstants.RESPONSE_SUCCESS)
+    }
+
+    def "Update normal array"() {
+        given: "A contact point"
+        ContactPointDto dto = new ContactPointDto()
+        dto.addressId = "Who dey?"
+        String dtoJson = objectMapper.writeValueAsString([dto])
+
+        when: "Updating the contact points"
+        String result = controller.updateMany(dtoJson)
 
         then: "Should be successful"
         1 * contactPointService.update(_)

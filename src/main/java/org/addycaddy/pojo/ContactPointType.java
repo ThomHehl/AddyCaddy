@@ -4,10 +4,14 @@ public enum ContactPointType {
     BillingAddress,
     BillingEmail,
     BillingPhone,
+    BusinessAddress,
     BusinessEmail,
+    BusinessPhone,
     Fax,
     HomePhone,
-    Location,
+    LocationAddress,
+    LocationEmail,
+    LocationPhone,
     ShippingAddress,
     WorkPhone
 }

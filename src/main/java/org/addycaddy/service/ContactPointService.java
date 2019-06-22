@@ -10,6 +10,9 @@ public interface ContactPointService {
     ContactPointDto create(ContactPointDto contactPointDto)
             throws AddyCaddyException;
 
+    ContactPointDto[] create(ContactPointDto[] contactPoints)
+            throws AddyCaddyException;
+
     List<ContactPointDto> findByCustomerId(String customerId);
 
     List<ContactPointDto> findByEmail(String email);
@@ -19,5 +22,8 @@ public interface ContactPointService {
     List<ContactPointDto> findByPostalCode(String postalCode);
 
     ContactPointDto update(ContactPointDto contactPointDto)
+            throws AddyCaddyException;
+
+    ContactPointDto[] update(ContactPointDto[] contactPoints)
             throws AddyCaddyException;
 }

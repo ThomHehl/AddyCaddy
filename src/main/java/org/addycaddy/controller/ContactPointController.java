@@ -50,6 +50,29 @@ public class ContactPointController implements ErrorController {
         return result;
     }
 
+    @RequestMapping(value = AddyCaddyConstants.PATH_CREATE_MANY, method = { RequestMethod.POST })
+    @ResponseBody
+    public String createMany(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINTS) String contactPointJson) {
+        ContactPointDto[] contactPoints = null;
+        try {
+            contactPoints = objectMapper.readValue(contactPointJson, ContactPointDto[].class);
+        } catch (IOException ioe) {
+            throw new RuntimeException("Error parsing JSON:" + contactPointJson, ioe);
+        }
+
+        String result;
+
+        try {
+            contactPointService.create(contactPoints);
+            result = AddyCaddyConstants.RESPONSE_SUCCESS;
+        } catch (Throwable tw) {
+            log.error("Error creating contact points:" + contactPoints, tw);
+            result = AddyCaddyConstants.RESPONSE_FAILURE;
+        }
+
+        return result;
+    }
+
     @RequestMapping(value = AddyCaddyConstants.PATH_FIND_BY_CUST_ID, method = { RequestMethod.GET })
     @ResponseBody
     public List<ContactPointDto> findByCustomerId(@RequestParam(AddyCaddyConstants.KEY_CUSTOMER_ID) String customerId) {
@@ -118,6 +141,38 @@ public class ContactPointController implements ErrorController {
                 result = AddyCaddyConstants.RESPONSE_SUCCESS;
             } catch (Throwable tw) {
                 log.error("Error updating contact point:" + contactPointDto, tw);
+                result = AddyCaddyConstants.RESPONSE_FAILURE;
+            }
+        }
+
+        return result;
+    }
+
+    @RequestMapping(value = AddyCaddyConstants.PATH_UPDATE_MANY, method = { RequestMethod.POST })
+    @ResponseBody
+    public String updateMany(@RequestParam(AddyCaddyConstants.KEY_CONTACT_POINTS) String contactPointJson) {
+        ContactPointDto[] contactPoints = null;
+        try {
+            contactPoints = objectMapper.readValue(contactPointJson, ContactPointDto[].class);
+        } catch (IOException ioe) {
+            throw new RuntimeException("Error parsing JSON:" + contactPointJson, ioe);
+        }
+
+        boolean valid = true;
+        for (ContactPointDto contactPointDto : contactPoints) {
+            if (StringUtils.isEmpty(contactPointDto.getAddressId())) {
+                valid = false;
+            }
+        }
+
+        String result = AddyCaddyConstants.RESPONSE_FAILURE;
+
+        if(valid) {
+            try {
+                contactPointService.update(contactPoints);
+                result = AddyCaddyConstants.RESPONSE_SUCCESS;
+            } catch (Throwable tw) {
+                log.error("Error updating contact points:" + contactPoints, tw);
                 result = AddyCaddyConstants.RESPONSE_FAILURE;
             }
         }
