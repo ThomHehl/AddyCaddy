@@ -259,8 +259,10 @@ public class ContactPoint {
         switch (contactPointType) {
             case BillingAddress:
             case BusinessAddress:
+            case HomeAddress:
             case LocationAddress:
             case ShippingAddress:
+            case WorkAddress:
                 result = true;
                 break;
             default:
@@ -277,7 +279,9 @@ public class ContactPoint {
         switch (contactPointType) {
             case BillingEmail:
             case BusinessEmail:
+            case HomeEmail:
             case LocationEmail:
+            case WorkEmail:
                 result = true;
                 break;
             default:
@@ -293,11 +297,15 @@ public class ContactPoint {
         boolean result;
 
         switch (contactPointType) {
+            case BillingFax:
             case BillingPhone:
+            case BusinessFax:
             case BusinessPhone:
-            case Fax:
+            case LocationFax:
             case LocationPhone:
+            case HomeFax:
             case HomePhone:
+            case WorkFax:
             case WorkPhone:
                 result = true;
                 break;

@@ -20,6 +20,9 @@ public class Phone {
     @Column(name = COL_PHONE_NUMBER, nullable = false)
     private String                      phoneNumber;
 
+    @Column(name = "phone_extension")
+    private String                      phoneExtension;
+
     public Long getId() {
         return id;
     }
@@ -44,12 +47,21 @@ public class Phone {
         this.phoneNumber = phone;
     }
 
+    public String getPhoneExtension() {
+        return phoneExtension;
+    }
+
+    public void setPhoneExtension(String phoneExtension) {
+        this.phoneExtension = phoneExtension;
+    }
+
     @Override
     public String toString() {
         return "Phone{" +
                 "id=" + id +
                 ", countryCode='" + countryCode + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
+                ", phoneExtension='" + phoneExtension + '\'' +
                 '}';
     }
 

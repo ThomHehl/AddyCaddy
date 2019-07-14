@@ -2,6 +2,7 @@ package org.addycaddy.pojo
 
 import org.addycaddy.exception.AddyCaddyException
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.LocalDate
 
@@ -68,131 +69,117 @@ class ContactPointTest extends Specification {
         return result
     }
 
+    static List<ContactPointType> getAddressTypes() {
+        List<ContactPointType> result = new ArrayList<>();
+
+        for (ContactPointType cpType : ContactPointType.values()) {
+            if (cpType.toString().endsWith("Address")) {
+                result.add(cpType);
+            }
+        }
+
+        return result;
+    }
+
+    static List<ContactPointType> getEmailTypes() {
+        List<ContactPointType> result = new ArrayList<>();
+
+        for (ContactPointType cpType : ContactPointType.values()) {
+            if (cpType.toString().endsWith("Email")) {
+                result.add(cpType);
+            }
+        }
+
+        return result;
+    }
+
+    static List<ContactPointType> getPhoneTypes() {
+        List<ContactPointType> result = new ArrayList<>();
+
+        for (ContactPointType cpType : ContactPointType.values()) {
+            if (cpType.toString().endsWith("Phone")
+                || cpType.toString().endsWith("Fax")) {
+                result.add(cpType);
+            }
+        }
+
+        return result;
+    }
+
     void setup() {
         contactPoint = getBillingAddress()
     }
 
-    def "isAddress BillingAddress"() {
-        when: "When testing for address"
-        boolean result = contactPoint.isAddress()
+    @Unroll("#cpType should be address")
+    def "isAddress addresses"() {
+        given: "An address of a certain type"
+        contactPoint.setContactPointType(cpType)
 
-        then: "Should be true"
-        result
+        expect: "isAddress() to be true"
+        contactPoint.isAddress()
+
+        where:
+        cpType << getAddressTypes()
     }
 
-    def "isAddress HomePhone"() {
-        given: "A home phone number"
-        ContactPoint homePhone = getHomePhone()
+    @Unroll("#cpType should not be an address")
+    def "isAddress phones and email"() {
+        given: "An address of a certain type"
+        contactPoint.setContactPointType(cpType)
 
-        when: "When testing for address"
-        boolean result = homePhone.isAddress()
+        expect: "isAddress() to be false"
+        !contactPoint.isAddress()
 
-        then: "Should be false"
-        !result
+        where:
+        cpType << getPhoneTypes() + getEmailTypes()
     }
 
-    def "isAddress Location"() {
-        given: "A location"
-        ContactPoint location = getLocation()
+    @Unroll("#cpType should be an email")
+    def "isEmail emails"() {
+        given: "An email of a certain type"
+        contactPoint.setContactPointType(cpType)
 
-        when: "When testing for address"
-        boolean result = location.isAddress()
+        expect: "isEmail() to be true"
+        contactPoint.isEmail()
 
-        then: "Should be true"
-        result
+        where:
+        cpType << getEmailTypes()
     }
 
-    def "isAddress WorkEmail"() {
-        given: "A WorkEmail"
-        ContactPoint workEmail = getWorkEmail()
+    @Unroll("#cpType should not be an email")
+    def "isEmail phones and addresses"() {
+        given: "A contact point of a certain type"
+        contactPoint.setContactPointType(cpType)
 
-        when: "When testing for address"
-        boolean result = workEmail.isAddress()
+        expect: "isEmail to be false"
+        !contactPoint.isEmail()
 
-        then: "Should be false"
-        !result
+        where:
+        cpType << getPhoneTypes() + getAddressTypes()
     }
 
-    def "isEmail BillingAddress"() {
-        when: "When testing for email"
-        boolean result = contactPoint.isEmail()
+    @Unroll("#cpType should be a phone")
+    def "isPhone phones"() {
+        given: "An phone of a certain type"
+        contactPoint.setContactPointType(cpType)
 
-        then: "Should be false"
-        !result
+        expect: "isPhone() to be true"
+        contactPoint.isPhone()
+
+        where:
+        cpType << getPhoneTypes()
     }
 
-    def "isEmail HomePhone"() {
-        given: "A home phone number"
-        ContactPoint homePhone = getHomePhone()
+    @Unroll("#cpType should not be a phone")
+    def "isPhone emails and addresses"() {
+        given: "A contact point of a certain type"
+        contactPoint.setContactPointType(cpType)
 
-        when: "When testing for email"
-        boolean result = homePhone.isEmail()
+        expect: "isPhone to be false"
+        !contactPoint.isPhone()
 
-        then: "Should be false"
-        !result
-    }
-
-    def "isEmail Location"() {
-        given: "A location"
-        ContactPoint location = getLocation()
-
-        when: "When testing for email"
-        boolean result = location.isEmail()
-
-        then: "Should be false"
-        !result
-    }
-
-    def "isEmail WorkEmail"() {
-        given: "A WorkEmail"
-        ContactPoint workEmail = getWorkEmail()
-
-        when: "When testing for email"
-        boolean result = workEmail.isEmail()
-
-        then: "Should be true"
-        result
-    }
-
-    def "isPhone BillingAddress"() {
-        when: "When testing for phone"
-        boolean result = contactPoint.isPhone()
-
-        then: "Should be false"
-        !result
-    }
-
-    def "isPhone HomePhone"() {
-        given: "A home phone number"
-        ContactPoint homePhone = getHomePhone()
-
-        when: "When testing for phone"
-        boolean result = homePhone.isPhone()
-
-        then: "Should be true"
-        result
-    }
-
-    def "isPhone Location"() {
-        given: "A location"
-        ContactPoint location = getLocation()
-
-        when: "When testing for phone"
-        boolean result = location.isPhone()
-
-        then: "Should be false"
-        !result
-    }
-
-    def "isPhone WorkEmail"() {
-        given: "A WorkEmail"
-        ContactPoint workEmail = getWorkEmail()
-
-        when: "When testing for phone"
-        boolean result = workEmail.isPhone()
-
-        then: "Should be false"
-        !result
+        where:
+        cpType << getEmailTypes() + getAddressTypes()
     }
 
     def "Equals same object"() {
@@ -344,7 +331,7 @@ class ContactPointTest extends Specification {
         ContactPoint.addContactPoint(set, contactPoint)
 
         then: "Should hold one location"
-        ContactPoint current = ContactPoint.findCurrentContactPoint(set, ContactPointType.Location)
+        ContactPoint current = ContactPoint.findCurrentContactPoint(set, ContactPointType.LocationAddress)
         contactPoint.equals(current)
     }
 
@@ -361,7 +348,7 @@ class ContactPointTest extends Specification {
         ContactPoint.addContactPoint(set, contactPoint)
 
         then: "Should hold the last location"
-        ContactPoint current = ContactPoint.findCurrentContactPoint(set, ContactPointType.Location)
+        ContactPoint current = ContactPoint.findCurrentContactPoint(set, ContactPointType.LocationAddress)
         contactPoint.equals(current)
         !cp2.isInPlay()
     }
