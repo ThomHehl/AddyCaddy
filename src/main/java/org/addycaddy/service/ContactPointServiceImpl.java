@@ -29,7 +29,6 @@ public class ContactPointServiceImpl implements ContactPointService{
     @Override
     public ContactPointDto create(ContactPointDto contactPointDto)
             throws AddyCaddyException {
-
         String customerId = contactPointDto.getCustomerId();
         List<ContactPoint> oldContactPoints = contactPointRepository.findByCustomerId(customerId);
 
@@ -83,7 +82,13 @@ public class ContactPointServiceImpl implements ContactPointService{
             });
         });
 
-        contactPointRepository.saveAll(toBeSaved);
+        try {
+            contactPointRepository.saveAll(toBeSaved);
+        } catch (Throwable tw) {
+            String msg = "Error saving:" + toBeSaved;
+            log.error(msg, tw);
+            throw new AddyCaddyException(msg, tw);
+        }
         ContactPointDto[] result = new ContactPointDto[returnList.size()];
         result = returnList.toArray(result);
 
@@ -107,6 +112,7 @@ public class ContactPointServiceImpl implements ContactPointService{
     private ContactPoint fromDto(ContactPointDto contactPointDto) throws AddyCaddyException {
         ContactPoint contactPoint = mapper.map(contactPointDto, ContactPoint.class);
 
+        contactPoint.setOtherId(contactPointDto.getAdditionalId());
         if (StringUtils.isEmpty(contactPointDto.getAddressId())) {
             contactPoint.setExternalId();
         }
@@ -157,6 +163,8 @@ public class ContactPointServiceImpl implements ContactPointService{
         }
 
         result.setCustomerId(contactPoint.getCustomerId());
+        result.setAdditionalId(contactPoint.getOtherId());
+        result.setAddressId(contactPoint.getExternalId());
         result.setContactPointType(contactPoint.getContactPointType().toString());
         result.setAddressId(contactPoint.getExternalId());
 

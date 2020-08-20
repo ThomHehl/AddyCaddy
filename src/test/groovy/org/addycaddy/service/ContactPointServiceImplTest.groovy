@@ -11,6 +11,7 @@ import spock.lang.Specification
 
 class ContactPointServiceImplTest extends Specification {
     static final String                 CUSTOMER_ID = "Go, Bucks!"
+    static final String                 ADDITIONAL_ID = "Who dey?"
     ContactPointRepository              contactPointRepository
     ContactPointServiceImpl             service
 
@@ -25,6 +26,7 @@ class ContactPointServiceImplTest extends Specification {
         ContactPointDto dto = new ContactPointDto()
         dto.contactPointType = ContactPointDto.TYPE_BILLING_ADDR
         dto.customerId = CUSTOMER_ID
+        dto.additionalId = ADDITIONAL_ID
         dto.attention = "Billing Department"
         dto.name = "Ford Prefect"
         dto.street1 = "120 S Main St"
@@ -56,6 +58,7 @@ class ContactPointServiceImplTest extends Specification {
 
         result.contactPointType == dto.contactPointType
         result.customerId == dto.customerId
+        result.additionalId == dto.additionalId
         result.attention == dto.attention
         result.street1 == dto.street1
         result.street2 == dto.street2
@@ -63,6 +66,8 @@ class ContactPointServiceImplTest extends Specification {
         result.state == dto.state
         result.postalCode == dto.postalCode
         result.countryCode == dto.countryCode
+        result.additionalId != null;
+        result.additionalId != "";
     }
 
     def "Create second"() {
